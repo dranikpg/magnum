@@ -32,8 +32,10 @@ cmake .. \
     -DCORRADE_TESTSUITE_TARGET_XCTEST=ON \
     -DCORRADE_WITH_INTERCONNECT=OFF \
     -G Xcode
-set -o pipefail && cmake --build . --config Release --target install | xcbeautify
+set -o pipefail && cmake --build . --config Release --target install -j6 | xcbeautify
 cd ../..
+
+ninja --help 2>&1 | grep "N jobs in parallel" || true
 
 # Crosscompile SDL. On 2022-14-02 curl says the certificate is expired, so
 # ignore that.
@@ -41,7 +43,7 @@ cd ../..
 curl --insecure -O https://www.libsdl.org/release/SDL2-2.0.10.tar.gz
 tar -xzvf SDL2-2.0.10.tar.gz
 cd SDL2-2.0.10/Xcode-iOS/SDL
-set -o pipefail && xcodebuild -sdk iphonesimulator13.7 | xcbeautify
+set -o pipefail && xcodebuild -sdk iphonesimulator13.7 -jobs 6 -parallelizeTargets | xcbeautify
 cp build/Release-iphonesimulator/libSDL2.a $HOME/deps/lib
 mkdir -p $HOME/deps/include/SDL2
 cp -R ../../include/* $HOME/deps/include/SDL2
@@ -78,7 +80,7 @@ cmake .. \
     -DMAGNUM_BUILD_TESTS=ON \
     -DMAGNUM_BUILD_GL_TESTS=ON \
     -G Xcode
-set -o pipefail && cmake --build . --config Release | xcbeautify
+set -o pipefail && cmake --build . --config Release -j6 | xcbeautify
 # TODO: find a better way to avoid
 # Library not loaded: /System/Library/Frameworks/OpenGLES.framework/OpenGLES
 # error
